@@ -12,6 +12,8 @@ RED = 255, 0, 0
 YELLOW = 255, 255, 0
 BLUE = 0, 0, 255
 
+font = pygame.font.SysFont("Verdana", 20)
+
 main_surface = pygame.display.set_mode(screen)
 
 #create hero
@@ -27,7 +29,7 @@ def create_enemy():
     enemy.fill(RED)
     enemy_rect = pygame.Rect(width, random.randint(0, height),
                              *enemy.get_size())
-    enemy_speed = random.randint(1, 5)
+    enemy_speed = random.randint(4, 6)
     return [enemy, enemy_rect, enemy_speed]
 
 
@@ -37,7 +39,7 @@ def create_benefit():
     benefit.fill(YELLOW)
     benefit_rect = pygame.Rect(random.randint(0, width), 0,
                                *benefit.get_size())
-    benefit_speed = random.randint(1, 5)
+    benefit_speed = random.randint(4, 6)
     return [benefit, benefit_rect, benefit_speed]
 
 
@@ -47,7 +49,9 @@ pygame.time.set_timer(CREATE_ENEMY, 1500)
 
 # timer for create benefit
 CREATE_BENEFIT = pygame.USEREVENT + 1
-pygame.time.set_timer(CREATE_BENEFIT, 5000)
+pygame.time.set_timer(CREATE_BENEFIT, 2500)
+
+scores = 0
 
 # list og enemies
 enemies = []
@@ -78,6 +82,8 @@ while is_working:
     #draw hero
     main_surface.blit(ball, ball_rect)
 
+    #draw font
+    main_surface.blit(font.render(str(scores), True, WHITE), width - 30, 0)
     #draw and move enemies
     for enemy in enemies:
         enemy[1] = enemy[1].move(-enemy[2], 0)
@@ -88,7 +94,7 @@ while is_working:
             enemies.pop(enemies.index(enemy))
 
         if ball_rect.colliderect(enemy[1]):
-            print("Fail!")
+            is_working = False
 
     #draw and move benefits
     for benefit in benefits:
@@ -100,7 +106,8 @@ while is_working:
             benefits.pop(benefits.index(benefit))
 
         if ball_rect.colliderect(benefit[1]):
-            print("Super!")
+            benefits.pop(benefits.index(benefit))
+            scores += 1
 
     # if ball_rect.bottom >= heights or ball_rect.top <= 0:
     #     ball_speed[1] = -ball_speed[1]
