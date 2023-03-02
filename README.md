@@ -2,4 +2,4 @@
 
 # Game Python drone goose
 
-This project game written for learning python.
+This project game written for learning python with use pygame module.
