@@ -4,7 +4,7 @@ from pygame.constants import QUIT, K_DOWN, K_UP, K_RIGHT, K_LEFT
 
 pygame.init()
 FPS = pygame.time.Clock()
-screen = width, height = 800, 600
+screen = width, height = 1200, 800
 
 BLACK = 0, 0, 0
 WHITE = 255, 255, 255
@@ -12,7 +12,7 @@ RED = 255, 0, 0
 YELLOW = 255, 255, 0
 BLUE = 0, 0, 255
 
-font = pygame.font.SysFont("Verdana", 20)
+font = pygame.font.SysFont("Verdana", 32)
 
 main_surface = pygame.display.set_mode(screen)
 
@@ -26,6 +26,9 @@ player_speed = 5
 
 background = pygame.transform.scale(
     pygame.image.load('./assets/background.png').convert(), screen)
+backgroundX = 0
+backgroundX2 = background.get_width()
+background_speed = 3
 
 
 # function create enemy
@@ -87,13 +90,27 @@ while is_working:
 
     #refill screen
     # main_surface.fill(WHITE)
-    main_surface.blit(background, (0, 0))
+    #static background
+    # main_surface.blit(background, (0, 0))
+
+    # dinamic background
+    backgroundX -= background_speed
+    backgroundX2 -= background_speed
+
+    if backgroundX < -background.get_width():
+        backgroundX = background.get_width()
+
+    if backgroundX2 < -background.get_width():
+        backgroundX2 = background.get_width()
+
+    main_surface.blit(background, (backgroundX, 0))
+    main_surface.blit(background, (backgroundX2, 0))
 
     #draw hero
     main_surface.blit(player, player_rect)
 
     #draw font
-    main_surface.blit(font.render(str(scores), True, BLUE), (width - 30, 0))
+    main_surface.blit(font.render(str(scores), True, RED), (width - 30, 0))
     #draw and move enemies
     for enemy in enemies:
         enemy[1] = enemy[1].move(-enemy[2], 0)
