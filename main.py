@@ -1,4 +1,5 @@
 import random
+from os import listdir
 import pygame
 from pygame.constants import QUIT, K_DOWN, K_UP, K_RIGHT, K_LEFT
 
@@ -19,8 +20,15 @@ main_surface = pygame.display.set_mode(screen)
 #create hero
 # player = pygame.Surface((20, 20))
 # player.fill(WHITE)
-player = pygame.transform.scale(
-    pygame.image.load('./assets/player.png').convert_alpha(), (100, 40))
+player_imgs = [
+    pygame.transform.scale(
+        pygame.image.load('./assets/goose/' + file).convert_alpha(), (100, 40))
+    for file in listdir("./assets/goose")
+]
+player = player_imgs[0]
+# player = pygame.transform.scale(
+#     pygame.image.load('./assets/player.png').convert_alpha(), (100, 40))
+
 player_rect = player.get_rect()
 player_speed = 5
 
@@ -37,7 +45,7 @@ def create_enemy():
     # enemy.fill(RED)
     enemy = pygame.transform.scale(
         pygame.image.load('./assets/enemy.png').convert_alpha(), (60, 30))
-    enemy_rect = pygame.Rect(width, random.randint(0, height),
+    enemy_rect = pygame.Rect(width, random.randint(50, height - 50),
                              *enemy.get_size())
     enemy_speed = random.randint(4, 6)
     return [enemy, enemy_rect, enemy_speed]
@@ -49,7 +57,7 @@ def create_benefit():
     # benefit.fill(YELLOW)
     benefit = pygame.transform.scale(
         pygame.image.load('./assets/benefit.png').convert_alpha(), (30, 60))
-    benefit_rect = pygame.Rect(random.randint(0, width), 0,
+    benefit_rect = pygame.Rect(random.randint(30, width - 30), 0,
                                *benefit.get_size())
     benefit_speed = random.randint(2, 6)
     return [benefit, benefit_rect, benefit_speed]
@@ -57,24 +65,29 @@ def create_benefit():
 
 # timer for create enemy
 CREATE_ENEMY = pygame.USEREVENT + 1
-pygame.time.set_timer(CREATE_ENEMY, 1500)
+pygame.time.set_timer(CREATE_ENEMY, 2500)
 
 # timer for create benefit
-CREATE_BENEFIT = pygame.USEREVENT + 1
-pygame.time.set_timer(CREATE_BENEFIT, 2500)
+CREATE_BENEFIT = pygame.USEREVENT + 2
+pygame.time.set_timer(CREATE_BENEFIT, 3500)
 
+# change image for animation goose
+CHANGE_IMG = pygame.USEREVENT + 3
+pygame.time.set_timer(CHANGE_IMG, 125)
+
+img_index = 0
 scores = 0
+life = 3
 
-# list og enemies
+# list of enemies
 enemies = []
+# list of benefits
 benefits = []
 
 #run game
 is_working = True
 while is_working:
-
     FPS.tick(60)
-
     for event in pygame.event.get():
         if event.type == QUIT:
             is_working = False
@@ -85,6 +98,12 @@ while is_working:
         if event.type == CREATE_BENEFIT:
             benefits.append(create_benefit())
 
+        if event.type == CHANGE_IMG:
+            img_index += 1
+            if img_index == len(player_imgs):
+                img_index = 0
+            player = player_imgs[img_index]
+
     # listen pressed key
     pressed_keys = pygame.key.get_pressed()
 
@@ -93,7 +112,7 @@ while is_working:
     #static background
     # main_surface.blit(background, (0, 0))
 
-    # dinamic background
+    # dynamics background
     backgroundX -= background_speed
     backgroundX2 -= background_speed
 
@@ -110,18 +129,27 @@ while is_working:
     main_surface.blit(player, player_rect)
 
     #draw font
-    main_surface.blit(font.render(str(scores), True, RED), (width - 30, 0))
+    main_surface.blit(font.render("life - " + str(life), True, RED), (10, 0))
+
+    main_surface.blit(font.render("scores - " + str(scores), True, RED),
+                      (width - 180, 0))
+
     #draw and move enemies
     for enemy in enemies:
         enemy[1] = enemy[1].move(-enemy[2], 0)
         main_surface.blit(enemy[0], enemy[1])
 
         #delete enemy when it is behind screen
-        if enemy[1].left < 0:
+        if enemy[1].left < -61:
             enemies.pop(enemies.index(enemy))
 
         if player_rect.colliderect(enemy[1]):
-            is_working = False
+            enemies.pop(enemies.index(enemy))
+            life -= 1
+            if life <= 0:
+                main_surface.blit(font.render("Game  over!", True, BLACK),
+                                  (width / 2, height / 2))
+                is_working = False
 
     #draw and move benefits
     for benefit in benefits:
@@ -129,7 +157,7 @@ while is_working:
         main_surface.blit(benefit[0], benefit[1])
 
         #delete benefit when it is behind screen
-        if benefit[1].bottom > height:
+        if benefit[1].bottom > height + 60:
             benefits.pop(benefits.index(benefit))
 
         if player_rect.colliderect(benefit[1]):
