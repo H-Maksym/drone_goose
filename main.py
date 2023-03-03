@@ -22,9 +22,10 @@ main_surface = pygame.display.set_mode(screen)
 # player.fill(WHITE)
 player_imgs = [
     pygame.transform.scale(
-        pygame.image.load('./assets/goose/' + file).convert_alpha(), (100, 40))
+        pygame.image.load('./assets/goose/' + file).convert_alpha(), (200, 80))
     for file in listdir("./assets/goose")
 ]
+
 player = player_imgs[0]
 # player = pygame.transform.scale(
 #     pygame.image.load('./assets/player.png').convert_alpha(), (100, 40))
